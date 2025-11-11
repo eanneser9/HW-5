@@ -39,7 +39,7 @@ As you work on your homework, make sure you commit regularly (with helpful commi
 
 2.	Choice 2: Recreate the graph shown below. It shows monthly homicides in Baltimore, with a reference added for the date of the arrest of Freddie Gray and color used to show colder months (November through April) versus warmer months (May through October). There is a smooth line added to help show seasonal and long-term trends in this data.
 
-```{r fig.height= 3, fig.width=10}
+```{r fig.height= 3, fig.width=15}
 crime <- read_csv("data/homicide-data.csv")
 
 crime <- crime %>% 
@@ -59,7 +59,7 @@ balt<- crime %>%
   group_by(month_year, season) %>% 
   summarise( n_total    = n()) 
   
-
+freddie_gray_date <- as.Date("2015-04-12")  
 
 
 balt %>% 
@@ -71,10 +71,21 @@ balt %>%
         panel.grid.minor = element_line(color = "grey45"))+
   scale_fill_manual(
   values = c(
-    "summer" = "grey80",
-    "winter" = "skyblue2"
+    "summer" = "grey85",
+    "winter" = "cadetblue2"
   )
-)
-
+)+
+  geom_vline(
+    xintercept = freddie_gray_date,
+    linetype = "dashed",
+    linewidth = 1.5,
+    color = "red"
+  ) +
+  geom_text(
+    aes(x = freddie_gray_date-80, y = 42),
+    label = "Arrest of\nFreddie Gray",
+    color = "grey85",
+    size = 5,
+    hjust = 1) 
 ```
 
