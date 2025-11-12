@@ -24,6 +24,8 @@ library(ggplot2)
 library(ggthemes)
 library(stringr)
 library(ggbeeswarm)
+library(sf)
+library(tigris)
 ```
 Take the following steps to set up your GitHub repository for the homework (we will work on this as an in-course exercise):
 1.	Set up a local (i.e., on your computer) R project with subdirectories for the data, writing (this is where you’ll put your Rmarkdown file and the output file), and figures.
@@ -36,10 +38,17 @@ Take the following steps to set up your GitHub repository for the homework (we w
 For the README.md file, you can create a text file in RStudio and save it as “README.md”. You can then write this file using Markdown syntax (like RMarkdown, but without any code chunks).
 As you work on your homework, make sure you commit regularly (with helpful commit messages). You should have at least 15 commit messages in your history for the repo by the time you turn in the homework.
 
+1.	Choice 1: Pick one city in the data. Create a map showing the locations of the homicides in that city, using the sf framework discussed in class. Use tigris to download boundaries for some sub-city geography (e.g., tracts, block groups, county subdivisions) to show as a layer underneath the points showing homicides. Use different facets for solved versus unsolved homicides and different colors to show the three race groups with the highest number of homicides for that city (you may find the fct_lump function from forcats useful for this).
 
-2.	Choice 2: Recreate the graph shown below. It shows monthly homicides in Baltimore, with a reference added for the date of the arrest of Freddie Gray and color used to show colder months (November through April) versus warmer months (May through October). There is a smooth line added to help show seasonal and long-term trends in this data.
+```{r}
+ma_map <- counties(state = "MA", cb = TRUE, class = "sf")
 
-```{r fig.height= 3, fig.width=15}
+suffolk <- ma_map %>% 
+  filter(NAMELSAD == "Suffolk County")
+
+ggplot()+
+  geom_sf(data = suffolk)
+
 crime <- read_csv("data/homicide-data.csv")
 
 crime <- crime %>% 
@@ -47,6 +56,42 @@ crime <- crime %>%
   mutate(date = ymd(reported_date))
 
 head(crime)
+
+
+unsolved_lvls <- c("Open/No arrest", "Closed without arrest")
+
+
+boston <- crime %>%
+  group_by(city_name) %>% 
+  ungroup() %>% 
+  filter(city_name == "Boston, MA") %>% 
+  drop_na(lat, lon) %>% 
+  mutate(
+    disposition = recode(disposition,
+      "Closed without arrest" = "Unsolved",
+      "Open/No arrest"        = "Unsolved",
+      "Closed by arrest"      = "Solved"
+    )
+  )
+
+boston <- st_as_sf(boston, coords = c("lon", "lat")) %>% 
+  st_set_crs(4269)
+  
+
+ggplot()+
+  geom_sf(data = suffolk, color ="lightgray")+
+  geom_sf(data= boston, aes(color = disposition))
+
+```
+
+
+
+
+
+2.	Choice 2: Recreate the graph shown below. It shows monthly homicides in Baltimore, with a reference added for the date of the arrest of Freddie Gray and color used to show colder months (November through April) versus warmer months (May through October). There is a smooth line added to help show seasonal and long-term trends in this data.
+
+```{r fig.height= 3, fig.width=15}
+
 
 
 balt<- crime %>% 
@@ -91,3 +136,4 @@ geom_smooth(aes(x = month_year, y = n_total),
 
 ```
 
+I know we had the choice to do one or the other, but I wanted to try both. 
