@@ -41,10 +41,10 @@ As you work on your homework, make sure you commit regularly (with helpful commi
 1.	Choice 1: Pick one city in the data. Create a map showing the locations of the homicides in that city, using the sf framework discussed in class. Use tigris to download boundaries for some sub-city geography (e.g., tracts, block groups, county subdivisions) to show as a layer underneath the points showing homicides. Use different facets for solved versus unsolved homicides and different colors to show the three race groups with the highest number of homicides for that city (you may find the fct_lump function from forcats useful for this).
 
 ```{r}
-ma_map <- counties(state = "MA", cb = TRUE, class = "sf")
+ma_map <- tracts(state = "MA",county = "Suffolk", cb = TRUE, class = "sf")
 
-suffolk <- ma_map %>% 
-  filter(NAMELSAD == "Suffolk County")
+#suffolk <- ma_map %>% 
+#  filter(NAMELSAD == "Suffolk County")
 
 ggplot()+
   geom_sf(data = suffolk)
@@ -70,18 +70,23 @@ boston <- crime %>%
     disposition = recode(disposition,
       "Closed without arrest" = "Unsolved",
       "Open/No arrest"        = "Unsolved",
-      "Closed by arrest"      = "Solved"
-    )
-  )
+      "Closed by arrest"      = "Solved")) %>% 
+  mutate(victim_race = fct_lump(fct_infreq(victim_race), n = 3))
 
 boston <- st_as_sf(boston, coords = c("lon", "lat")) %>% 
   st_set_crs(4269)
   
 
 ggplot()+
-  geom_sf(data = suffolk, color ="lightgray")+
-  geom_sf(data= boston, aes(color = disposition))
-
+  geom_sf(data = ma_map, color ="lightgray")+
+  geom_sf(data= boston, aes(color = victim_race))+
+  facet_wrap(~disposition)+
+  theme(panel.background = element_rect(fill = "grey56"), 
+        panel.grid.major = element_line(color = "grey45"),
+        panel.grid.minor = element_line(color = "grey45"),
+        legend.position = "bottom")+
+  scale_fill_manual(name = NULL)
+  
 ```
 
 
