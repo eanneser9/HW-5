@@ -44,7 +44,7 @@ As you work on your homework, make sure you commit regularly (with helpful commi
 ma_map <- tracts(state = "MA",county = "Suffolk", cb = TRUE, class = "sf")
 
 ggplot()+
-  geom_sf(data = suffolk)
+  geom_sf(data = ma_map)
 
 crime <- read_csv("data/homicide-data.csv")
 
